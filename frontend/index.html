@@ -110,7 +110,7 @@
                {
                     if(checkboxslots[i].checked)
                     {
-                        data_timestamps.push(checkboxslots[i].value);    
+                        data_timestamps.push(parseInt(checkboxslots[i].value));    
                     }
                }
                
@@ -127,10 +127,10 @@
                     url: 'http://52.163.95.79:6767/insertAvailability',
                     type: 'post',
                     dataType: 'json',
-                    data: data_toSend,
+                    data: JSON.stringify(data_toSend),
                     success: function (data) {
                         $('#output').append("<br/>Response:<br/>");
-                        $('#output').append(data.msg);
+                        $('#output').append(JSON.stringify(data));
                     },
                     error: function(xhr, textStatus, error){
                           $('#output').append("<br/>Response:<br/>");
