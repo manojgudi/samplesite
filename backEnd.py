@@ -81,7 +81,6 @@ def setHour(datetimeobj, hourTuple):
 
 @route('/static/:filename#.*#')
 def server_static(filename):
-    print("FILENAME", filename)
     return static_file(filename, root='./frontend/')
 
 @route('/insertAvailability', method=['POST'])
@@ -126,6 +125,7 @@ def insertAvailability():
 
 
 @route("/displayAvailability", method=["POST"])
+@enable_cors
 def displayAvailability():
     """
     Request:
@@ -163,7 +163,7 @@ def displayAvailability():
 
 def main():
     app = default_app()
-    app.run(host = "0.0.0.0", port = 6767, quiet= False)
+    app.run(host = "0.0.0.0", port = 6767, quiet=True)
 
 if __name__ == "__main__":
     main()
