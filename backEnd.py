@@ -151,7 +151,7 @@ def displayAvailability():
         userAvailability["endDate"]    = endDatetime.timestamp()
 
         setNames = set()
-        for row in mysqlSession.query(UserAvailability).filter(UserAvailability.available >= startDatetime).filter(UserAvailability.available <= endDatetime).all():
+        for row in mysqlSession.query(UserAvailability).filter(UserAvailability.available >= startDatetime).filter(UserAvailability.available < endDatetime).all():
             setNames.add(row.username)
 
         userAvailability["setNames"]   = list(setNames)
