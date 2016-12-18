@@ -7,174 +7,57 @@
         <link rel="stylesheet" href="css/kickfooter.css"/>
         <script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
         <script type="text/javascript" src="js/bootstrap.min.js" ></script>
-        <style>
-            
-        </style>
+        
     </head>
-    <body>
+    <body class="">
         <div class="well">
             <h1>KickFooter</h1>
 
             <h3 id="today"></h3>
             <hr/>
         </div>
+        
+        
         <form id="kickFooterForm" name="kickFooterForm">
-            <div class="col-md-6">
-
+            
+            <div id="success" style="display:none" class="alert alert-success">
+                  <strong>Success!</strong> Your availability is recorded.
+            </div>
+            <div id="formContainer" class="col-md-6 ">
+                <!--
                 <div class="form-group">
-                  <!--<label for="sel1">Name</label>-->
                   <select class="form-control" id="users">
                     <option value="none">Select Name</option>
                   </select>
                 </div>
-
+                -->
+                <div class="form-group">
+                  <label for="users">Name:</label>
+                  <input type="text" class="form-control" id="users">
+                </div>
                 <div class="form-group">
                   <label for="availabilitySlots">Availability:</label>
-                  <div id="availabilitySlots"/> 
+                  <div id="availabilitySlots"> 
+                      <div id="morningSlots" class="col-md-6">
+                          <img src="img/sun-icon-16.jpg"/>
+                      </div>
+                      <div id="eveningSlots" class="col-md-6" >
+                          <img src="img/moon-512.png"/>
+                      </div>
+                  </div>
                 </div>
-
+                <hr/>
                 <div class="form-group">
-                    <button type="button" class="btn btn-primary" id="submit">Submit</button>
+                    <button type="button" class="btn btn-primary" style="width:100%" id="submit">Submit</button>
                 </div>
 
-                <div class="well" id="output">
+                <div class="well" style="display:none" id="output">
                 </div>
-
             </div>
         </form>
         
         
-        <script>
-            
-            var users = [
-                {username :"Dravid",userid:1},
-                {username :"Sehwag",userid:2},
-                {username :"Kohli",userid:3},
-                {username :"Dhoni",userid:4},
-                {username :"Sachin",userid:5}
-            ];
-            
-            //Initiate Slots and Users
-            //Can be linked to database later
-            var slots = [
-                {
-                    displayName: "6AM-7AM",
-                    timestamp : (new Date()).setHours(6,0,0,0)
-                },
-                {
-                    displayName: "7AM-8AM",
-                    timestamp : (new Date()).setHours(7,0,0,0)
-                },
-                {
-                    displayName: "8AM-9AM",
-                    timestamp : (new Date()).setHours(8,0,0,0)
-                },
-                {
-                    displayName: "9AM-10AM",
-                    timestamp : (new Date()).setHours(9,0,0,0)
-                }
-                ,{
-                    displayName: "10AM-11AM",
-                    timestamp : (new Date()).setHours(10,0,0,0)
-                }
-            ];
-            
-            
-            //Create HTML checkboxes
-            for(var i=0; i < slots.length ; i++)
-            {
-                var slotCheckboxHtml="<div class=\"checkbox\">\
-                                      <label><input type=\"checkbox\" name=\"slot\" value=\""+slots[i].timestamp+"\">"+slots[i].displayName+"</label>\
-                                    </div>";
-                $("#availabilitySlots").append(slotCheckboxHtml);
-            }
-            
-            //Create User dropdown
-            for(var i=0; i < users.length ; i++)
-            {
-                var usersLiHtml="<option value=\""+users[i].userid+"\">"+users[i].username+"</option>";
-                $("#users").append(usersLiHtml);
-            }
-            
-            $("#submit").click(function(){
-               
-               // User Details
-               var data_username = $('#users').find(":selected").text();
-               var data_userid = $('#users').find(":selected").val();
-               data_userid = parseInt(data_userid);
-               //if(userid=="none")return false;
-               
-               // Slot Details
-               var data_timestamps=[];    
-               var checkboxslots = $("#availabilitySlots input:checkbox");
-               for (var i=0;i<checkboxslots.length;i++)
-               {
-                    if(checkboxslots[i].checked)
-                    {
-                        data_timestamps.push(parseInt(checkboxslots[i].value));    
-                    }
-               }
-               
-               //Create JSON
-               var data_toSend = {
-                   username:data_username,
-                   userid:data_userid,
-                   availability:data_timestamps
-               }
-               $("#output").append("<br/>Posting JSON <br/>");
-               $("#output").append(JSON.stringify(data_toSend));
-               
-                $.ajax({
-                    url: 'http://52.163.95.79:6767/insertAvailability',
-                    type: 'post',
-                    dataType: 'json',
-                    data: JSON.stringify(data_toSend),
-                    success: function (data) {
-                        $('#output').append("<br/>Response:<br/>");
-                        $('#output').append(JSON.stringify(data));
-                    },
-                    error: function(xhr, textStatus, error){
-                          $('#output').append("<br/>Response:<br/>");
-                          $('#output').append(xhr.statusText+"<Br/>");
-                          $('#output').append(textStatus+"<br/>");
-                          $('#output').append(error+"<Br/>");
-                      }
-                });
-                
-               
-                
-                /* SAMPLE JSON
-                {
-                "username" : "somename"
-                "userid"   : 123,
-                "availability" : [ 1482065422000, 1482065429022, ]
-                }
-                52.163.95.79:6767/insertAvailability
-                */
-                
-            });
-            
-            
-            //Date Formatting
-            var monthNames = [
-              "January", "February", "March",
-              "April", "May", "June", "July",
-              "August", "September", "October",
-              "November", "December"
-            ];
-
-            var date = new Date();
-            var day = date.getDate();
-            var monthIndex = date.getMonth();
-            
-            var year = date.getFullYear();
-            
-            var today = day+  ' ' + monthNames[monthIndex] + ' ' + year;
-            
-            $(function(){
-                $("#today").html(today);
-            });
-        </script>
+        <script src="js/kickfooter.js"></script>
         
     </body>
 </html>
