@@ -9,6 +9,7 @@ import traceback
 import yaml
 
 from bottle import run, post, request, response, route, default_app
+from bottle import static_file
 from schemaCustom   import prepareBase, getMetaData, serializeUserAvailability
 
 from sqlalchemy     import create_engine
@@ -70,6 +71,18 @@ def getReqDict(requestJSON):
         print(requestJSON.body.read().decode("utf-8"))
         return False
 
+def setHour(datetimeobj, hourTuple):
+    """
+    Used to create time slots
+    """
+    hour1, hour2 = hourTuple
+    return (datetimeobj.replace(hour=hour1, minute=0, second=0, microsecond=0), 
+            datetimeobj.replace(hour=hour2, minute=0, second=0, microsecond=0))
+
+@route('/static/:filename#.*#')
+def server_static(filename):
+    print("FILENAME", filename)
+    return static_file(filename, root='./frontend/')
 
 @route('/insertAvailability', method=['POST'])
 @enable_cors
@@ -92,7 +105,7 @@ def insertAvailability():
         return {"responseCode" : 1, "responseStatus" : "Unable to parse request" }
 
     mysqlSession = sessionGenerator()
-    username     = requestJSON["username"]
+    username     = requestJSON["username"].lower()
     userid       = requestJSON["userid"]
     availability = requestJSON["availability"]
 
@@ -100,7 +113,7 @@ def insertAvailability():
     try:
         for epochTimestamp in availability:
             mysqlSession.add( UserAvailability( username=username, userid=userid,
-                                                inserted=datetime.datetime.fromtimestamp(int(epochTimestamp/1000))
+                                                available=datetime.datetime.fromtimestamp(int(epochTimestamp/1000))
                     ) )
         mysqlSession.commit()
         LOG.info("Commit successful for user:%s"%(username))
@@ -110,6 +123,43 @@ def insertAvailability():
         return {"responseCode": 2, "responseStatus" : "Error saving state to database, please resubmit"}
 
     return {"responseCode" : 0, "responseStatus":"All ok"}
+
+
+@route("/displayAvailability", method=["POST"])
+def displayAvailability():
+    """
+    Request:
+        {"queryTime" : 1482065422000 }
+
+    Response:
+    """
+    requestJSON      = getReqDict(request)
+    if not requestJSON:
+        return {"responseCode" : 1, "responseStatus" : "Unable to parse request" }
+
+    mysqlSession = sessionGenerator()
+    requestDatetime = datetime.datetime.fromtimestamp(int(requestJSON["queryTime"]/1000))
+
+    timeSlots = [ (6, 7), (7,8), (8,9), (9,10), (10,11),
+                  (18, 19), (19,20), (20, 21), (21, 22), (22, 23)]
+    timeSlotDatetimes = list(map(lambda x: setHour(requestDatetime, x), timeSlots))
+
+    listUserAvailability = []
+    for timeSlot in timeSlotDatetimes:
+        startDatetime, endDatetime = timeSlot
+        # Populate Names for a time slot
+        userAvailability = {}
+        userAvailability["startDate"]  = startDatetime.timestamp()
+        userAvailability["endDate"]    = endDatetime.timestamp()
+
+        setNames = set()
+        for row in mysqlSession.query(UserAvailability).filter(UserAvailability.available >= startDatetime).filter(UserAvailability.available <= endDatetime).all():
+            setNames.add(row.username)
+
+        userAvailability["setNames"]   = list(setNames)
+        listUserAvailability.append(userAvailability)
+
+    return {"responseCode" : 0, "responseMessage" : "All ok", "userAvailability" : listUserAvailability}
 
 def main():
     app = default_app()

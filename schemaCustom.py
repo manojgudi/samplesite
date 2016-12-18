@@ -10,7 +10,7 @@ user_availability = Table( "user_availability", metadata,
         Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
         Column("username", String(64), nullable=False),
         Column("userid", Integer, primary_key = True, nullable=False),
-        Column("inserted", DATETIME, nullable=False)
+        Column("available", DATETIME, nullable=False)
     )
 
 def getMetaData():
@@ -38,6 +38,6 @@ def serializeUserAvailability(row):
         userInfo[columnName] = getattr(row, columnName)
 
     # Send Epoch times in millis to avoid timezone pains
-    userInfo["inserted"] = int(userInfo["inserted"].timestamp() * 1000)
+    userInfo["available"] = int(userInfo["available"].timestamp() * 1000)
 
     return userInfo
