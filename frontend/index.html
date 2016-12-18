@@ -100,6 +100,7 @@
                // User Details
                var data_username = $('#users').find(":selected").text();
                var data_userid = $('#users').find(":selected").val();
+               data_userid = parseInt(data_userid);
                //if(userid=="none")return false;
                
                // Slot Details
@@ -119,18 +120,24 @@
                    userid:data_userid,
                    availability:data_timestamps
                }
-               $("#output").append("Posting JSON <hr/>");
+               $("#output").append("<br/>Posting JSON <br/>");
                $("#output").append(JSON.stringify(data_toSend));
                
                 $.ajax({
                     url: 'http://52.163.95.79:6767/insertAvailability',
                     type: 'post',
                     dataType: 'json',
+                    data: data_toSend,
                     success: function (data) {
                         $('#output').append("<br/>Response:<br/>");
                         $('#output').append(data.msg);
                     },
-                    data: data_toSend
+                    error: function(xhr, textStatus, error){
+                          $('#output').append("<br/>Response:<br/>");
+                          $('#output').append(xhr.statusText+"<Br/>");
+                          $('#output').append(textStatus+"<br/>");
+                          $('#output').append(error+"<Br/>");
+                      }
                 });
                 
                
