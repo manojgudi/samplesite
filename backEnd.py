@@ -159,7 +159,7 @@ def displayAvailability():
         userAvailability["setNames"]   = list(setNames)
         listUserAvailability.append(userAvailability)
 
-    return {"responseCode" : 0, "responseMessage" : "All ok", "userAvailability" : listUserAvailability}
+    return {"responseCode" : 0, "responseStatus" : "All ok", "userAvailability" : listUserAvailability}
 
 def main():
     app = default_app()
