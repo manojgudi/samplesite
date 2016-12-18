@@ -65,10 +65,8 @@ def getReqDict(requestJSON):
     Validate request dict
     """
     try:
-        print(requestJSON.body.read().decode("utf-8"))
         return json.loads(requestJSON.body.read().decode("utf-8"))
     except:
-        print(requestJSON.body.read().decode("utf-8"))
         return False
 
 def setHour(datetimeobj, hourTuple):
