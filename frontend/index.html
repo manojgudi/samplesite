@@ -119,9 +119,11 @@
                    userid:data_userid,
                    availability:data_timestamps
                }
+               $("#output").append("Posting JSON <hr/>");
+               $("#output").append(JSON.stringify(data_toSend));
                
                 $.ajax({
-                    url: '/insertAvailability',
+                    url: 'http://52.163.95.79:6767/insertAvailability',
                     type: 'post',
                     dataType: 'json',
                     success: function (data) {
@@ -130,9 +132,8 @@
                     },
                     data: data_toSend
                 });
-    
-               $("#output").append("Posting JSON <hr/>");
-               $("#output").append(JSON.stringify(data));
+                
+               
                 
                 /* SAMPLE JSON
                 {
