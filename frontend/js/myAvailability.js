@@ -83,7 +83,12 @@
                var data_username = $('#users').val();
                var data_userid = 0; // for future use
                data_userid = parseInt(data_userid);
-               if(data_username.trim()=="")return false;
+               var nameRegex = /^[a-zA-Z0-9]+$/;
+                var validfirstUsername = data_username.match(nameRegex);
+                if(validfirstUsername == null){
+                    alert("Your first name is not valid. Only characters A-Z, a-z are  acceptable.");
+                    return false;
+                }
                
                // Slot Details
                var data_timestamps=[];    
