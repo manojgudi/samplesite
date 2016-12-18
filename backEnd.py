@@ -5,6 +5,7 @@ import bottle
 import datetime
 import logging    as LOG
 import simplejson as json
+import traceback
 import yaml
 
 from bottle import run, post, request, response, route, default_app
@@ -38,19 +39,40 @@ sessionGenerator = scoped_session(SessionClass)
 metadata         = getMetaData()
 UserAvailability = prepareBase(metadata).classes.user_availability
 
-def getReqDict(request):
+
+# TODO Remove this eventually
+def enable_cors(fn):
+    '''
+    Used as decorator to add Cross Origin to headers
+    '''
+    def _enable_cors(*args, **kwargs):
+        # set CORS headers
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+        response.headers['Access-Control-Allow-Headers'] = 'Set-Cookie'
+
+        if bottle.request.method != 'OPTIONS':
+            # actual request; reply with the actual response
+            return fn(*args, **kwargs)
+
+    return _enable_cors
+
+
+def getReqDict(requestJSON):
     """
     Validate request dict
     """
     try:
-        print(request.body.read().decode("utf-8"))
-        return json.loads(request.body.read().decode("utf-8"))
+        print(requestJSON.body.read().decode("utf-8"))
+        return json.loads(requestJSON.body.read().decode("utf-8"))
     except:
-        print(request.body.read().decode("utf-8"))
+        print(requestJSON.body.read().decode("utf-8"))
         return False
 
 
 @route('/insertAvailability', method=['POST'])
+@enable_cors
 def insertAvailability():
     """
     Request:
@@ -65,14 +87,14 @@ def insertAvailability():
             "responseStatus" : "All ok"
         }
     """
-    request      = getReqDict(request)
-    if not request:
+    requestJSON      = getReqDict(request)
+    if not requestJSON:
         return {"responseCode" : 1, "responseStatus" : "Unable to parse request" }
 
     mysqlSession = sessionGenerator()
-    username     = request["username"]
-    userid       = request["userid"]
-    availability = request["availability"]
+    username     = requestJSON["username"]
+    userid       = requestJSON["userid"]
+    availability = requestJSON["availability"]
 
     # Commit to database
     try:
@@ -83,7 +105,7 @@ def insertAvailability():
         mysqlSession.commit()
         LOG.info("Commit successful for user:%s"%(username))
     except:
-        LOG.error("Failed writing to database for: %s"%(username))
+        LOG.error("Failed writing to database for: %s\n%s"%(username, traceback.format_exc()))
         mysqlSession.rollback()
         return {"responseCode": 2, "responseStatus" : "Error saving state to database, please resubmit"}
 
