@@ -17,8 +17,33 @@
             <hr/>
         </div>
         
-        
-        <form id="kickFooterForm" name="kickFooterForm">
+        <div>
+
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+            <li role="presentation"><a href="#myAvailability" aria-controls="profile" role="tab" data-toggle="tab">My Availability</a></li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="home">
+                <table class="table table-striped" id="homeAvailability">
+                    <thead>
+                      <tr>
+                        <th>Timeslot</th>
+                        <th>Count</th>
+                        <th>People</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Dynamically added-->
+                    </tbody>
+                  </table>
+                <div class="well" id="outputHome"   style ="display:none"></div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="myAvailability">
+                <form id="kickFooterForm" name="kickFooterForm">
             
             <div id="success" style="display:none" class="alert alert-success">
                   <strong>Success!</strong> Your availability is recorded.
@@ -55,9 +80,70 @@
                 </div>
             </div>
         </form>
+            </div>
+          </div>
+
+        </div>
         
         
-        <script src="js/kickfooter.js"></script>
         
+        <script>
+            $('#myTabs a').click(function (e) {
+              e.preventDefault()
+              $(this).tab('show')
+            });
+          
+            var homeDate = (new Date()).setHours(0,0,0,0);
+            var data_HomeDate = {
+                queryTime : parseInt(homeDate)
+            };
+            $.ajax({
+                    url: 'http://52.163.95.79:6767/displayAvailability',
+                    type: 'post',
+                    dataType: 'json',
+                    data: JSON.stringify(data_HomeDate),
+                    success: function (data) {
+                        $('#outputHome').append("<br/>Response:<br/>");
+                        $('#outputHome').append(JSON.stringify(data));
+                        if(data.responseCode!=0)
+                        {
+                            alert(data.responseStatus)
+                        }
+                        
+                        for(var i=0;i<data.userAvailability.length;i++){
+                            var userAvailabilityObj = data.userAvailability[i];
+                            var utcStartDate = userAvailabilityObj.startDate;
+                            var epochStartDate = new Date(0); // The 0 there is the key, which sets the date to the epoch
+                            epochStartDate.setUTCSeconds(utcStartDate);
+                            
+                            var utcEndDate = userAvailabilityObj.endDate;
+                            var epochEndDate = new Date(0); // The 0 there is the key, which sets the date to the epoch
+                            epochEndDate.setUTCSeconds(utcEndDate);
+                            
+                            var startDate = new Date(epochStartDate);
+                            var endDate = new Date(epochEndDate); 
+                            var people = userAvailabilityObj.setNames.join();
+                            var count = userAvailabilityObj.setNames.length;
+                            
+                            var trTimeSlot = startDate.getHours()+"-"+endDate.getHours();
+                            
+                            
+                            $('#homeAvailability tbody').append('<tr><td>'+trTimeSlot+'</td><td>'+count+'</td><td>'+people+'</td></tr>');
+                        }
+                    },
+                    error: function(xhr, textStatus, error){
+                          $('#outputHome').append("<br/>Response:<br/>");
+                          $('#outputHome').append(xhr.statusText+"<Br/>");
+                          $('#outputHome').append(textStatus+"<br/>");
+                          $('#outputHome').append(error+"<Br/>");
+                      }
+             });
+
+            
+            
+            
+        </script>
+        <script src="js/myAvailability.js"></script>
+        <script src="js/home.js"></script>
     </body>
 </html>
