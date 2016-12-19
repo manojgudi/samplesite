@@ -8,8 +8,10 @@ import simplejson as json
 import traceback
 import yaml
 
+from beaker.middleware import SessionMiddleware
 from bottle import run, post, request, response, route, default_app
-from bottle import static_file
+from bottle import static_file, ServerAdapter
+
 from schemaCustom   import prepareBase, getMetaData, serializeUserAvailability
 
 from sqlalchemy     import create_engine
@@ -39,6 +41,24 @@ mysqlSession     =  SessionClass() #scoped_session(SessionClass)
 # Get ORM Mapped base instance
 metadata         = getMetaData()
 UserAvailability = prepareBase(metadata).classes.user_availability
+
+
+# Cherrypy server 
+
+class SSLCherryPyServer(ServerAdapter):
+  def run(self, handler):
+      from cherrypy import wsgiserver
+
+      #from cherrypy.wsgiserver.ssl_pyopenssl import pyOpenSSLAdapter
+      from  cherrypy.wsgiserver.ssl_builtin import BuiltinSSLAdapter
+
+      server = wsgiserver.CherryPyWSGIServer((self.host, self.port), handler)
+      #server.ssl_adapter = BuiltinSSLAdapter(caPEM, privatePEM, certificate_chain=certificateChain)
+      try:
+          server.start()
+      finally:
+          server.stop()
+
 
 
 # TODO Remove this eventually
@@ -74,7 +94,7 @@ def setHour(datetimeobj, hourTuple):
     Used to create time slots
     """
     hour1, hour2 = hourTuple
-    return (datetimeobj.replace(hour=hour1, minute=0, second=0, microsecond=0), 
+    return (datetimeobj.replace(hour=hour1, minute=0, second=0, microsecond=0),
             datetimeobj.replace(hour=hour2, minute=0, second=0, microsecond=0))
 
 @route('/static/:filename#.*#')
@@ -159,7 +179,9 @@ def displayAvailability():
 
 def main():
     app = default_app()
-    app.run(host = "0.0.0.0", port = 6767, quiet=True)
+    myapp = SessionMiddleware(app)
+    run(app=myapp, host='0.0.0.0', port=6767, server=SSLCherryPyServer)
+
 
 if __name__ == "__main__":
     main()
