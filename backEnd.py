@@ -34,7 +34,7 @@ userdbConnectionString = "mysql+pymysql://{}:{}@{}:{}".format(userdbUname, userd
 userdbEngine           = create_engine("{}/{}".format(userdbConnectionString, "userdb"))
 
 SessionClass     = sessionmaker(bind = userdbEngine)
-sessionGenerator = scoped_session(SessionClass)
+mysqlSession     =  SessionClass() #scoped_session(SessionClass)
 
 # Get ORM Mapped base instance
 metadata         = getMetaData()
@@ -101,7 +101,6 @@ def insertAvailability():
     if not requestJSON:
         return {"responseCode" : 1, "responseStatus" : "Unable to parse request" }
 
-    mysqlSession = sessionGenerator()
     username     = requestJSON["username"].lower()
     userid       = requestJSON["userid"]
     availability = requestJSON["availability"]
@@ -135,7 +134,6 @@ def displayAvailability():
     if not requestJSON:
         return {"responseCode" : 1, "responseStatus" : "Unable to parse request" }
 
-    mysqlSession = sessionGenerator()
     requestDatetime = datetime.datetime.fromtimestamp(int(requestJSON["queryTime"]/1000))
 
     timeSlots = [ (6, 7), (7,8), (8,9), (9,10), (10,11),
